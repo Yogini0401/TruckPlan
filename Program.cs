@@ -1,3 +1,4 @@
+using DFDSTruckPlan.Config;
 using DFDSTruckPlan.DbContext;
 using DFDSTruckPlan.Services;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<TruckPlanDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.Configure<AzureMaps>(
+    builder.Configuration.GetSection("AzureMaps"));
 
 builder.Services.AddScoped<ILocationService, AzureLocationService>();
 builder.Services.AddScoped<ITruckPlanService, TruckPlanService>();

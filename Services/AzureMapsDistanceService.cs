@@ -1,15 +1,17 @@
-﻿using DFDSTruckPlan.Models;
+﻿using DFDSTruckPlan.Config;
+using DFDSTruckPlan.Models;
 using DFDSTruckPlan.Models.AzureRestModels;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace DFDSTruckPlan.Services
 {
     public class AzureLocationService : ILocationService
     {
-        private static readonly string subscriptionKey = "A4TemI5bmXKS68HpdBKErsP4qxn0nCdzFQIB1GJqI7j9c0n2el5CJQQJ99AIACi5YpzXfkziAAAgAZMP2ew3";
-        private static readonly string baseUrl = "https://atlas.microsoft.com/route/directions/json";
-        private static readonly string reverseGeocodeUrl = "https://atlas.microsoft.com/search/address/reverse/json";
-
+        private readonly AzureMaps _azureMaps;
+        public AzureLocationService(IOptions<AzureMaps> azureMaps) {
+            _azureMaps = azureMaps.Value;
+        }
 
         public async Task<double> GetDistance(Location origin, Location destination)
         {
@@ -19,7 +21,7 @@ namespace DFDSTruckPlan.Services
             {
                 using var client = new HttpClient();
 
-                string requestUrl = $"{baseUrl}?api-version=1.0&query={originString}:{destinationString}&subscription-key={subscriptionKey}";
+                string requestUrl = $"{_azureMaps.BaseUrl}?api-version=1.0&query={originString}:{destinationString}&subscription-key={_azureMaps.SubscriptionKey}";
 
                 var response = await client.GetAsync(requestUrl);
 
@@ -37,8 +39,8 @@ namespace DFDSTruckPlan.Services
             }
             catch (Exception ex)
             {
+                throw;
             }
-            return -1;
         }
 
         public async Task<LocationInfo> GetLocationInfo(Location origin)
@@ -49,7 +51,7 @@ namespace DFDSTruckPlan.Services
                 using var client = new HttpClient();
 
                 // Construct the request URL
-                string requestUrl = $"{reverseGeocodeUrl}?api-version=1.0&query={originString}&subscription-key={subscriptionKey}";
+                string requestUrl = $"{_azureMaps.ReverseGeocodeUrl}?api-version=1.0&query={originString}&subscription-key={_azureMaps.SubscriptionKey}";
 
                 var response = await client.GetAsync(requestUrl);
                 string result = await response.Content.ReadAsStringAsync();
